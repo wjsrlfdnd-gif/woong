@@ -23,6 +23,7 @@
       user-select: none;
     }
     canvas { image-rendering: auto; touch-action: manipulation; }
+    #battleCanvas { touch-action: none; }
     .game-btn { transition: transform 0.1s ease, filter 0.15s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
     .game-btn:hover:not(:disabled) { filter: brightness(1.09); }
     .game-btn:active:not(:disabled) { transform: scale(0.95); }
@@ -92,101 +93,517 @@
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* Mobile Portrait (< 640px) */
-    @media (max-width: 639px) {
-      header {
-        padding: 0.35rem 0.5rem !important;
-        gap: 0.35rem !important;
+    /* 모바일·태블릿 터치 및 무스크롤 UI 최적화 (< 1024px) */
+    @media (max-width: 1023px) {
+      .keycap, .mobile-hide-hotkey { display: none !important; }
+      body.is-battle {
+        height: 100dvh;
+        max-height: 100dvh;
+        overflow: hidden !important;
+        overscroll-behavior: none;
       }
-      header h1 { font-size: 0.85rem !important; }
-      header .game-btn {
-        padding: 0.28rem 0.45rem !important;
-        font-size: 0.68rem !important;
-        white-space: nowrap;
+      body.is-battle #globalToast { display: none !important; }
+      body.is-lobby #globalToast {
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%);
+        bottom: 0.75rem !important;
+        max-width: calc(100vw - 1.5rem);
       }
-      #lobbyScreen { padding: 0.4rem !important; gap: 0.5rem !important; }
-      #battleScreen { padding: 0.35rem !important; gap: 0.45rem !important; }
-      #battleScreen .aspect-video { border-radius: 0.65rem !important; }
-      #dangerBanner, #mythicAwakenBanner {
-        width: 90%;
-        max-width: 320px;
-      }
-      #btnUseGoldPotion, #btnUseShockScroll, #btnUseBossBane {
-        padding: 0.35rem 0.4rem !important;
-        font-size: 0.65rem !important;
-        gap: 0.2rem;
-      }
-    }
 
-    /* Mobile Landscape (phones & compact tablets) */
-    @media (max-height: 560px) and (orientation: landscape) {
-      header {
-        padding: 0.2rem 0.55rem !important;
-        gap: 0.3rem !important;
-      }
-      header h1 { font-size: 0.8rem !important; }
-      header .game-btn {
-        padding: 0.22rem 0.45rem !important;
-        font-size: 0.68rem !important;
-        white-space: nowrap;
-      }
-      #battleScreen {
-        grid-template-columns: minmax(0, 1fr) 248px !important;
-        gap: 0.4rem !important;
-        padding: 0.25rem 0.45rem !important;
-      }
-      #battleScreen > section, #battleScreen > aside {
-        grid-column: span 1 / span 1 !important;
-      }
-      #battleScreen > section {
+      /* 전투 화면: 100dvh 단일 화면 무스크롤 잠금 */
+      body.is-battle #battleScreen:not(.hidden) {
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 1 1 0% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        padding: 0.25rem 0.35rem !important;
         gap: 0.25rem !important;
       }
-      #battleScreen > section > div:first-child {
-        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+      body.is-battle #battleScreen > section {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        gap: 0.22rem !important;
+      }
+      body.is-battle #battleHudStrip {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        padding: 0.18rem !important;
+        gap: 0.18rem !important;
+        border-radius: 0.6rem !important;
+      }
+      body.is-battle #battleHudStrip > div {
+        padding: 0.14rem 0.35rem !important;
+        border-radius: 0.45rem !important;
+      }
+      body.is-battle #battleHudStrip span {
+        font-size: 0.64rem !important;
+        line-height: 1.2 !important;
+      }
+      body.is-battle #battleCanvasWrap {
+        width: min(100%, calc(34dvh * 16 / 9)) !important;
+        max-width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16 / 9;
+        margin-inline: auto !important;
+        border-radius: 0.6rem !important;
+      }
+      body.is-battle #battleSynergyBar {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        scrollbar-width: none;
+        padding: 0.2rem 0.45rem !important;
+        font-size: 0.65rem !important;
+        line-height: 1.2 !important;
+        border-radius: 0.55rem !important;
+      }
+      body.is-battle #battleSynergyBar::-webkit-scrollbar { display: none; }
+      body.is-battle #battleActionDeck {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        gap: 0.2rem !important;
         padding: 0.2rem !important;
+        border-radius: 0.6rem !important;
+      }
+      body.is-battle #battleActionDeck > button {
+        padding: 0.24rem 0.12rem !important;
+        border-radius: 0.5rem !important;
+        min-width: 0 !important;
+      }
+
+      /* 전투 하단(선택 유닛 + 등급별 강화): 한눈에 모두 노출 */
+      body.is-battle #battleScreen > aside {
+        flex: 1 1 0% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-y: auto !important;
+        gap: 0.22rem !important;
+        padding-right: 0 !important;
+      }
+      body.is-battle #tierUpgradePanel {
+        order: -1;
+        padding: 0.2rem !important;
+        gap: 0.15rem !important;
+        border-radius: 0.6rem !important;
+      }
+      body.is-battle #tierUpgradePanel > div:first-child { display: none !important; }
+      body.is-battle #tierUpgradeGrid {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
         gap: 0.2rem !important;
       }
-      #battleScreen > section > div:first-child > div {
-        padding: 0.15rem 0.3rem !important;
+      body.is-battle #tierUpgradeGrid > button {
+        padding: 0.2rem 0.3rem !important;
+        border-radius: 0.48rem !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.1rem !important;
+        min-width: 0 !important;
       }
-      #battleScreen .aspect-video {
-        align-self: center;
-        aspect-ratio: 16 / 9;
-        height: calc(100dvh - 148px);
-        max-height: calc(100dvh - 148px);
-        width: auto;
+      body.is-battle #tierUpgradeGrid > button > div:first-child { width: 100%; }
+      body.is-battle #tierUpgradeGrid > button > div:first-child > span:first-child { display: none !important; }
+      body.is-battle #tierUpgradeGrid > button > div:first-child > div > div:first-child {
+        font-size: 0.61rem !important;
+        line-height: 1.15 !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      body.is-battle #tierUpgradeGrid > button > div:first-child > div > div:last-child {
+        font-size: 0.56rem !important;
+        line-height: 1.15 !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      body.is-battle #tierUpgradeGrid > button > span {
+        padding: 0.1rem 0.28rem !important;
+        font-size: 0.6rem !important;
+        text-align: center;
+      }
+
+      body.is-battle #battleUnitCard {
+        padding: 0.28rem 0.38rem !important;
+        gap: 0.18rem !important;
+        border-radius: 0.65rem !important;
+      }
+      body.is-battle #selUnitBox { padding: 0.24rem 0.36rem !important; gap: 0.4rem !important; border-radius: 0.5rem !important; }
+      body.is-battle #selUnitImgFrame { width: 2.2rem !important; height: 2.2rem !important; border-radius: 0.5rem !important; }
+      body.is-battle #selUnitImg { width: 1.85rem !important; height: 1.85rem !important; }
+      body.is-battle #selUnitName { font-size: 0.76rem !important; line-height: 1.2 !important; }
+      body.is-battle #selUnitRole { font-size: 0.6rem !important; line-height: 1.15 !important; }
+      body.is-battle #selUnitStats { font-size: 0.64rem !important; margin-top: 0 !important; }
+      body.is-battle #selUnitDps,
+      body.is-battle #selUnitMech {
+        padding: 0.14rem 0.36rem !important;
+        font-size: 0.6rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      body.is-battle #selUnitGear { padding: 0.18rem 0.34rem !important; gap: 0.12rem !important; }
+      body.is-battle #selUnitGear > div:last-child > div {
+        flex-direction: row !important;
+        justify-content: center !important;
+        gap: 0.18rem !important;
+        padding: 0.16rem 0.2rem !important;
+      }
+      body.is-battle #selUnitGear .item-icon-wrap { width: 1.35rem !important; height: 1.35rem !important; flex-shrink: 0; }
+      body.is-battle #selUnitActions {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 0.2rem !important;
+      }
+      body.is-battle #selUnitActions > button {
+        padding: 0.26rem 0.12rem !important;
+        font-size: 0.59rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        border-radius: 0.45rem !important;
+      }
+      body.is-battle #battleUnitCard > div:last-child { padding-top: 0.14rem !important; font-size: 0.6rem !important; }
+    }
+
+    /* 컴팩트 높이 스마트폰 세로 모드 (<= 700px: iPhone SE / 미니 기종 대응) */
+    @media (max-width: 1023px) and (max-height: 700px) {
+      body.is-battle #battleCanvasWrap { width: min(100%, calc(28dvh * 16 / 9)) !important; }
+      body.is-battle #battleHudStrip { padding: 0.12rem !important; gap: 0.12rem !important; }
+      body.is-battle #battleHudStrip > div { padding: 0.08rem 0.24rem !important; }
+      body.is-battle #battleSynergyBar { padding: 0.14rem 0.35rem !important; font-size: 0.58rem !important; }
+      body.is-battle #battleActionDeck { padding: 0.14rem !important; gap: 0.14rem !important; }
+      body.is-battle #battleActionDeck > button { padding: 0.16rem 0.08rem !important; }
+      body.is-battle #battleActionDeck > button > span:first-child { font-size: 0.6rem !important; }
+      body.is-battle #battleActionDeck > button > span:last-child { font-size: 0.54rem !important; }
+      body.is-battle #tierUpgradePanel { padding: 0.14rem !important; }
+      body.is-battle #tierUpgradeGrid > button {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 0.14rem 0.24rem !important;
+        gap: 0.15rem !important;
+      }
+      body.is-battle #tierUpgradeGrid > button > span { padding: 0.08rem 0.22rem !important; font-size: 0.56rem !important; flex-shrink: 0; }
+      body.is-battle #battleUnitCard { padding: 0.18rem 0.28rem !important; gap: 0.1rem !important; }
+      body.is-battle #battleUnitCard > div:first-child { font-size: 0.6rem !important; }
+      body.is-battle #selUnitBox { padding: 0.15rem 0.26rem !important; gap: 0.3rem !important; }
+      body.is-battle #selUnitImgFrame { width: 1.85rem !important; height: 1.85rem !important; }
+      body.is-battle #selUnitImg { width: 1.55rem !important; height: 1.55rem !important; }
+      body.is-battle #selUnitName { font-size: 0.7rem !important; }
+      body.is-battle #selUnitRole { font-size: 0.56rem !important; }
+      body.is-battle #selUnitStats { font-size: 0.59rem !important; }
+      body.is-battle #selUnitDps,
+      body.is-battle #selUnitMech { padding: 0.09rem 0.26rem !important; font-size: 0.55rem !important; }
+      body.is-battle #selUnitGear { padding: 0.1rem 0.24rem !important; gap: 0.08rem !important; }
+      body.is-battle #selUnitGear > div:first-child { font-size: 0.55rem !important; }
+      body.is-battle #selUnitGear > div:last-child > div { padding: 0.08rem 0.12rem !important; font-size: 0.54rem !important; }
+      body.is-battle #selUnitActions { gap: 0.14rem !important; }
+      body.is-battle #selUnitActions > button { padding: 0.18rem 0.08rem !important; font-size: 0.55rem !important; }
+      body.is-battle #battleUnitCard > div:last-child { padding-top: 0.08rem !important; font-size: 0.55rem !important; }
+    }
+
+    /* 스마트폰 세로 모드 (< 640px) */
+    @media (max-width: 639px) {
+      header {
+        padding: 0.24rem 0.4rem !important;
+        gap: 0.2rem !important;
+      }
+      header h1 { font-size: 0.78rem !important; }
+      header .game-btn {
+        padding: 0.18rem 0.32rem !important;
+        font-size: 0.61rem !important;
+        white-space: nowrap;
+      }
+      #headerBrandGroup > div:first-child { width: 1.55rem !important; height: 1.55rem !important; font-size: 0.6rem !important; border-radius: 0.45rem !important; }
+      #headerControlsRow { width: 100%; justify-content: space-between; gap: 0.2rem !important; min-width: 0; }
+      #headerCurrencyPill > div { padding: 0.16rem 0.32rem !important; font-size: 0.62rem !important; }
+      #headerActionBtns {
+        display: flex;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        scrollbar-width: none;
         max-width: 100%;
+        gap: 0.18rem !important;
       }
-      #battleScreen > aside {
-        max-height: calc(100dvh - 44px) !important;
-        overflow-y: auto !important;
+      #headerActionBtns::-webkit-scrollbar { display: none; }
+
+      /* 전투 중 세로폰 상단 바: 1줄 초슬림(34px) */
+      body.is-battle header {
+        flex-wrap: nowrap !important;
+        padding: 0.2rem 0.4rem !important;
       }
-      #btnSummon, #btnBatchMerge, #btnGambleRare, #btnBountyBoss, #btnAllUltimate {
-        padding: 0.25rem 0.3rem !important;
+      body.is-battle #headerTitleWrap { display: none !important; }
+      body.is-battle #headerCurrencyPill,
+      body.is-battle #btnLandscapeFs,
+      body.is-battle #btnInstallApp { display: none !important; }
+      body.is-battle #headerControlsRow { width: auto !important; flex: 1 1 0%; justify-content: flex-end; min-width: 0; }
+      body.is-battle #battleHudStrip { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+      body.is-battle #battleCanvasWrap > div:first-of-type { top: 0.25rem !important; left: 0.25rem !important; right: 0.25rem !important; gap: 0.2rem !important; }
+      body.is-battle #battleCanvasWrap > div:first-of-type > div:last-child { gap: 0.2rem !important; flex-wrap: nowrap !important; }
+      body.is-battle #btnNextWaveNow,
+      body.is-battle #btnBountyBoss,
+      body.is-battle #btnAllUltimate {
+        padding: 0.14rem 0.28rem !important;
+        gap: 0.15rem !important;
+        border-radius: 0.4rem !important;
+        white-space: nowrap;
+      }
+      body.is-battle #btnNextWaveNow,
+      body.is-battle #btnBountyBoss span,
+      body.is-battle #btnAllUltimate span { font-size: 0.56rem !important; }
+      body.is-battle #lblBountyCd,
+      body.is-battle #lblUltCd {
+        max-width: 60px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #dangerBanner, #mythicAwakenBanner {
+        width: 90%;
+        max-width: 310px;
       }
       #btnUseGoldPotion, #btnUseShockScroll, #btnUseBossBane {
-        padding: 0.22rem 0.4rem !important;
-        font-size: 0.65rem !important;
+        padding: 0.22rem 0.14rem !important;
+        font-size: 0.6rem !important;
+        gap: 0.1rem;
       }
-      #lobbyScreen { padding: 0.35rem 0.55rem !important; gap: 0.35rem !important; }
+
+      /* 로비 스테이지 탭: 세로 스마트폰 1화면 맞춤 */
+      #lobbyScreen { padding: 0.3rem 0.35rem !important; gap: 0.3rem !important; }
+      #lobbyHqBar { padding: 0.22rem !important; border-radius: 0.7rem !important; }
+      #lobbyHqTitleGroup { display: none !important; }
+      #lobbySubNavTabs {
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        gap: 0.18rem !important;
+        padding: 0.16rem !important;
+      }
+      #lobbySubNavTabs > button {
+        padding: 0.3rem 0.1rem !important;
+        font-size: 0.62rem !important;
+        text-align: center;
+      }
+      body.lobby-stage-active #lobbyTabStage {
+        padding: 0.4rem !important;
+        gap: 0.28rem !important;
+        border-radius: 0.85rem !important;
+      }
+      #lobbyStageTopRow > div:first-child h3 { font-size: 0.76rem !important; }
+      #lobbyWorldProgressBadge, #lobbyEquipSummary { font-size: 0.6rem !important; padding: 0.1rem 0.38rem !important; }
+      #btnWorldPrev, #btnWorldNext {
+        top: 0.45rem !important;
+        transform: none !important;
+        width: 1.75rem !important;
+        height: 1.75rem !important;
+        font-size: 0.72rem !important;
+      }
+      #btnWorldPrev { left: 0.38rem !important; }
+      #btnWorldNext { right: 0.38rem !important; }
+      #worldSliderViewport,
+      #lobbyStageSliderInner { min-height: 286px !important; }
+      #lobbyStageSliderInner { padding: 0.42rem !important; gap: 0.28rem !important; }
+      #lobbyStageSliderInner > div:first-child { padding-left: 2.05rem !important; padding-right: 2.05rem !important; }
+      #lobbySelectedWorldTitle { font-size: 0.95rem !important; line-height: 1.2 !important; }
+      #stageSubGrid { padding: 0.2rem !important; gap: 0.18rem !important; }
+      #stageSubGrid > button { padding-top: 0.18rem !important; padding-bottom: 0.18rem !important; font-size: 0.63rem !important; }
+      #lobbyStageInfoGrid { padding: 0.3rem !important; gap: 0.25rem !important; }
+      #btnStartStageBattle { padding-top: 0.52rem !important; padding-bottom: 0.52rem !important; font-size: 0.84rem !important; }
+    }
+
+    @media (max-width: 639px) and (max-height: 700px) {
+      #lobbyScreen { padding: 0.25rem 0.3rem !important; gap: 0.22rem !important; }
+      body.lobby-stage-active #lobbyTabStage { padding: 0.32rem !important; gap: 0.22rem !important; }
+      #worldSliderViewport,
+      #lobbyStageSliderInner { min-height: 224px !important; }
+      #lobbyStageSliderInner { padding: 0.34rem !important; gap: 0.2rem !important; }
+      #lobbyStageInfoGrid { padding: 0.24rem !important; gap: 0.2rem !important; }
+      #lobbyStageInfoGrid > div { padding-top: 0.15rem !important; }
+      #previewMidBossImg, #previewMainBossImg { width: 1.55rem !important; height: 1.55rem !important; }
+      #lobbyBossPatternBox { font-size: 0.56rem !important; line-height: 1.2 !important; }
+      #btnStartStageBattle { padding-top: 0.42rem !important; padding-bottom: 0.42rem !important; font-size: 0.82rem !important; }
+    }
+
+    /* 스마트폰 가로 모드 (max-height: 560px & landscape) */
+    @media (max-height: 560px) and (orientation: landscape) {
+      .keycap, .mobile-hide-hotkey { display: none !important; }
+      header {
+        padding: 0.16rem 0.5rem !important;
+        gap: 0.25rem !important;
+        flex-wrap: nowrap !important;
+      }
+      header h1 { font-size: 0.78rem !important; }
+      header .game-btn {
+        padding: 0.18rem 0.4rem !important;
+        font-size: 0.65rem !important;
+        white-space: nowrap;
+      }
+      body.is-battle {
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        overflow: hidden !important;
+      }
+      body.is-battle #headerTitleWrap,
+      body.is-battle #headerCurrencyPill,
+      body.is-battle #btnLandscapeFs,
+      body.is-battle #btnInstallApp { display: none !important; }
+      body.is-battle #headerBrandGroup > div:first-child { width: 1.55rem !important; height: 1.55rem !important; font-size: 0.6rem !important; }
+      body.is-battle #headerControlsRow { flex: 1 1 0%; justify-content: flex-end; min-width: 0; }
+      body.is-battle #headerActionBtns { flex-wrap: nowrap !important; gap: 0.22rem !important; }
+
+      body.is-battle #battleScreen:not(.hidden) {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) 278px !important;
+        gap: 0.35rem !important;
+        padding: 0.2rem 0.4rem !important;
+        height: calc(100dvh - 32px) !important;
+        max-height: calc(100dvh - 32px) !important;
+        overflow: hidden !important;
+        align-items: stretch !important;
+      }
+      body.is-battle #battleScreen > section,
+      body.is-battle #battleScreen > aside {
+        grid-column: span 1 / span 1 !important;
+      }
+      body.is-battle #battleScreen > section {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        justify-content: space-between;
+        gap: 0.18rem !important;
+      }
+      body.is-battle #battleHudStrip {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        padding: 0.12rem !important;
+        gap: 0.12rem !important;
+      }
+      body.is-battle #battleHudStrip > div { padding: 0.08rem 0.2rem !important; gap: 0.1rem !important; }
+      body.is-battle #battleHudStrip span:first-child { font-size: 0.52rem !important; }
+      body.is-battle #battleHudStrip span:last-child { font-size: 0.57rem !important; }
+      body.is-battle #battleCanvasWrap {
+        align-self: center;
+        aspect-ratio: 16 / 9;
+        height: calc(100dvh - 134px) !important;
+        max-height: calc(100dvh - 134px) !important;
+        width: auto !important;
+        max-width: 100% !important;
+      }
+      body.is-battle #battleSynergyBar {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        scrollbar-width: none;
+        padding: 0.14rem 0.4rem !important;
+        font-size: 0.6rem !important;
+      }
+      body.is-battle #battleSynergyBar::-webkit-scrollbar { display: none; }
+      body.is-battle #battleActionDeck {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+        padding: 0.14rem !important;
+        gap: 0.16rem !important;
+      }
+      body.is-battle #battleActionDeck > button { padding: 0.18rem 0.1rem !important; border-radius: 0.45rem !important; }
+      body.is-battle #battleActionDeck > button > span:first-child { font-size: 0.6rem !important; }
+      body.is-battle #battleActionDeck > button > span:last-child { font-size: 0.56rem !important; }
+
+      body.is-battle #battleScreen > aside {
+        height: 100% !important;
+        max-height: 100% !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        gap: 0.2rem !important;
+      }
+      body.is-battle #tierUpgradePanel {
+        order: -1;
+        padding: 0.2rem !important;
+        gap: 0.16rem !important;
+      }
+      body.is-battle #tierUpgradePanel > div:first-child { display: none !important; }
+      body.is-battle #tierUpgradeGrid {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.18rem !important;
+      }
+      body.is-battle #tierUpgradeGrid > button {
+        padding: 0.18rem 0.25rem !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.1rem !important;
+      }
+      body.is-battle #tierUpgradeGrid > button > div:first-child > span:first-child { display: none !important; }
+      body.is-battle #tierUpgradeGrid > button > div:first-child > div > div:first-child { font-size: 0.56rem !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      body.is-battle #tierUpgradeGrid > button > div:first-child > div > div:last-child { font-size: 0.54rem !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      body.is-battle #tierUpgradeGrid > button > span { padding: 0.1rem 0.25rem !important; font-size: 0.56rem !important; text-align: center; }
+
+      body.is-battle #battleUnitCard { padding: 0.25rem !important; gap: 0.18rem !important; }
+      body.is-battle #selUnitBox { padding: 0.22rem 0.32rem !important; gap: 0.35rem !important; }
+      body.is-battle #selUnitImgFrame { width: 2.1rem !important; height: 2.1rem !important; }
+      body.is-battle #selUnitImg { width: 1.75rem !important; height: 1.75rem !important; }
+      body.is-battle #selUnitDps,
+      body.is-battle #selUnitMech { padding: 0.15rem 0.32rem !important; font-size: 0.58rem !important; }
+      body.is-battle #selUnitGear { padding: 0.18rem 0.3rem !important; }
+      body.is-battle #selUnitGear > div:last-child > div {
+        flex-direction: row !important;
+        justify-content: center !important;
+        gap: 0.12rem !important;
+        padding: 0.12rem !important;
+      }
+      body.is-battle #selUnitGear .item-icon-wrap { width: 1.25rem !important; height: 1.25rem !important; }
+      body.is-battle #selUnitActions { gap: 0.16rem !important; }
+      body.is-battle #selUnitActions > button { padding: 0.22rem 0.08rem !important; font-size: 0.52rem !important; }
+
+      #lobbyScreen { padding: 0.25rem 0.5rem !important; gap: 0.25rem !important; }
+      #lobbyHqBar { padding: 0.22rem 0.5rem !important; }
+      #lobbyTabStage { padding: 0.35rem !important; gap: 0.25rem !important; }
+      #worldSliderViewport,
+      #lobbyStageSliderInner { min-height: 192px !important; }
+      #lobbyStageSliderInner { padding: 0.38rem 0.5rem !important; gap: 0.2rem !important; }
+      #lobbySelectedWorldTitle { font-size: 1rem !important; }
+      #lobbyStageInfoGrid { grid-template-columns: repeat(12, minmax(0, 1fr)) !important; padding: 0.25rem !important; gap: 0.25rem !important; }
+      #btnStartStageBattle { padding-top: 0.42rem !important; padding-bottom: 0.42rem !important; font-size: 0.82rem !important; }
     }
   </style>
 </head>
-<body class="min-h-[100dvh] flex flex-col">
+<body class="min-h-[100dvh] flex flex-col is-lobby lobby-stage-active">
 
   <!-- Top Navigation & Resource Bar -->
   <header class="sticky top-0 z-30 border-b border-slate-800/90 bg-slate-950/90 backdrop-blur-md px-3 sm:px-5 py-2 flex flex-wrap items-center justify-between gap-2 shadow-[0_6px_24px_rgba(2,6,23,0.7)]">
-    <div class="flex items-center gap-2.5">
+    <div id="headerBrandGroup" class="flex items-center gap-2.5 shrink-0">
       <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-300 via-rose-500 to-purple-600 flex items-center justify-center font-black text-slate-950 text-xs shadow-lg shadow-rose-500/20 ring-1 ring-white/30">RCD</div>
-      <div>
+      <div id="headerTitleWrap">
         <h1 class="text-sm sm:text-base font-black text-white tracking-tight leading-tight">랜덤 캐릭터 디펜스</h1>
         <p class="hidden sm:block text-[10px] text-slate-400 font-medium leading-none mt-0.5">전략 타워 디펜스 · 초월 각성</p>
       </div>
     </div>
 
     <!-- Account Currency, Speed, Codex & Settings -->
-    <div class="flex flex-wrap items-center gap-1.5">
-      <div class="flex items-center divide-x divide-slate-800 bg-slate-900/90 border border-slate-700/75 rounded-xl text-xs shadow-inner">
+    <div id="headerControlsRow" class="flex flex-wrap items-center gap-1.5">
+      <div id="headerCurrencyPill" class="flex items-center divide-x divide-slate-800 bg-slate-900/90 border border-slate-700/75 rounded-xl text-xs shadow-inner shrink-0">
         <div class="flex items-center gap-1 px-2.5 py-1.5">
           <span class="text-amber-300 text-[11px]">🪙</span>
           <span class="text-slate-400 hidden md:inline text-[10px] font-medium">금화</span>
@@ -204,28 +621,30 @@
         </div>
       </div>
 
-      <button id="btnSpeed" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 text-xs font-bold text-amber-300">
-        배속: 1x
-      </button>
-      <button id="btnMythicRecipeModal" class="game-btn relative px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-rose-950/70 border border-rose-500/35 text-xs font-bold text-rose-200 flex items-center gap-1.5">
-        <span>✨ 신화 조합식</span>
-        <span id="mythicReadyBadge" class="hidden px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black animate-bounce leading-none">0</span>
-      </button>
-      <button id="btnCodex" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-200">
-        유닛 도감
-      </button>
-      <button id="btnEquipCodex" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-200">
-        🛡️ 장비 도감
-      </button>
-      <button id="btnLandscapeFs" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-300" title="모바일 가로모드 전체화면 전환">
-        📱 가로전체
-      </button>
-      <button id="btnInstallApp" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-emerald-500/35 text-xs font-semibold text-emerald-300" title="홈 화면에 앱 설치 (가로모드 지원)">
-        📲 앱 설치
-      </button>
-      <button id="btnSettings" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-300">
-        ⚙️ 설정
-      </button>
+      <div id="headerActionBtns" class="flex flex-wrap items-center gap-1.5">
+        <button id="btnSpeed" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 text-xs font-bold text-amber-300">
+          배속: 1x
+        </button>
+        <button id="btnMythicRecipeModal" class="game-btn relative px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-rose-950/70 border border-rose-500/35 text-xs font-bold text-rose-200 flex items-center gap-1.5">
+          <span>✨ 신화<span class="hidden sm:inline"> 조합식</span></span>
+          <span id="mythicReadyBadge" class="hidden px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black animate-bounce leading-none">0</span>
+        </button>
+        <button id="btnCodex" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-200">
+          유닛<span class="hidden sm:inline"> 도감</span>
+        </button>
+        <button id="btnEquipCodex" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-200">
+          🛡️ 장비<span class="hidden sm:inline"> 도감</span>
+        </button>
+        <button id="btnLandscapeFs" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-300" title="모바일 가로모드 전체화면 전환">
+          📱 <span class="hidden sm:inline">가로</span>전체
+        </button>
+        <button id="btnInstallApp" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-emerald-500/35 text-xs font-semibold text-emerald-300" title="홈 화면에 앱 설치 (가로모드 지원)">
+          📲 <span class="hidden sm:inline">앱 </span>설치
+        </button>
+        <button id="btnSettings" class="game-btn px-2.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-300">
+          ⚙️ 설정
+        </button>
+      </div>
     </div>
   </header>
 
@@ -235,8 +654,8 @@
   <div id="lobbyScreen" class="flex-1 max-w-[1440px] w-full mx-auto p-2.5 sm:p-4 flex flex-col gap-3">
 
     <!-- Lobby Top Banner & Sub-navigation Tabs -->
-    <div class="panel-glass border border-slate-800 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
-      <div class="flex items-center gap-2.5">
+    <div id="lobbyHqBar" class="panel-glass border border-slate-800 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2.5">
+      <div id="lobbyHqTitleGroup" class="flex items-center gap-2.5">
         <span class="w-1.5 h-5 rounded-full bg-amber-400"></span>
         <div>
           <h2 class="text-sm font-black text-white leading-tight">모험가 본부</h2>
@@ -244,22 +663,22 @@
         </div>
       </div>
 
-      <div class="flex flex-wrap xl:flex-nowrap items-center gap-1 p-1 rounded-xl bg-slate-950/80 border border-slate-800/80 shrink-0">
+      <div id="lobbySubNavTabs" class="flex flex-wrap xl:flex-nowrap items-center gap-1 p-1 rounded-xl bg-slate-950/80 border border-slate-800/80 shrink-0">
         <button id="tabBtnStage" class="game-btn px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-extrabold text-xs shadow whitespace-nowrap">
-          🗺️ 월드 &amp; 스테이지
+          🗺️ <span class="hidden sm:inline">월드 &amp; </span>스테이지
         </button>
         <button id="tabBtnShop" class="game-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 font-semibold text-xs whitespace-nowrap">
-          🛒 아이템 상점
+          🛒 <span class="hidden sm:inline">아이템 </span>상점
         </button>
         <button id="tabBtnForge" class="game-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 font-semibold text-xs whitespace-nowrap">
-          🔨 장비 &amp; 강화
+          🔨 <span class="hidden sm:inline">장비 &amp; 강화</span><span class="sm:hidden">대장간</span>
         </button>
         <button id="tabBtnQuest" class="game-btn relative px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 font-semibold text-xs whitespace-nowrap">
-          📜 퀘스트 &amp; 추가 컨텐츠
+          📜 퀘스트<span class="hidden sm:inline"> &amp; 추가 컨텐츠</span>
           <span id="questBadgeCount" class="hidden ml-1 px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black">0</span>
         </button>
         <button id="tabBtnLab" class="game-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800/70 font-semibold text-xs whitespace-nowrap">
-          🧬 특성 연구소
+          🧬 특성<span class="hidden sm:inline"> 연구소</span>
         </button>
       </div>
     </div>
@@ -267,9 +686,9 @@
     <!-- TAB 1: STAGE SELECT (Unified Map-Integrated Info & Bottom Start Button) -->
     <div id="lobbyTabStage" class="w-full max-w-[1160px] mx-auto bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 flex flex-col gap-3 shadow-2xl">
       <!-- Top Header Strip -->
-      <div class="flex flex-wrap items-center justify-between gap-2">
+      <div id="lobbyStageTopRow" class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
-          <h3 class="text-sm font-extrabold text-white">🗺️ 월드 & 스테이지</h3>
+          <h3 class="text-sm font-extrabold text-white">🗺️ 월드 &amp; 스테이지</h3>
           <span id="lobbyWorldProgressBadge" class="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-xs font-extrabold text-amber-300">해금: 1 / 10 월드</span>
         </div>
         <div id="lobbyEquipSummary" class="text-[11px] text-emerald-300 font-semibold bg-emerald-950/35 border border-emerald-500/30 rounded-lg px-2.5 py-1">
@@ -289,7 +708,7 @@
         </button>
 
         <!-- Overlaid Info Layer Inside Map Image -->
-        <div class="relative z-10 min-h-[390px] sm:min-h-[430px] lg:min-h-[450px] p-3 sm:p-4 flex flex-col justify-between gap-3 pointer-events-none">
+        <div id="lobbyStageSliderInner" class="relative z-10 min-h-[390px] sm:min-h-[430px] lg:min-h-[450px] p-3 sm:p-4 flex flex-col justify-between gap-3 pointer-events-none">
           <!-- Top Map Title & Record Badges -->
           <div class="flex flex-wrap items-start justify-between gap-2">
             <div class="flex flex-col gap-1">
@@ -309,7 +728,7 @@
           <div class="mt-auto flex flex-col gap-2 pointer-events-auto">
             <div id="stageSubGrid" class="grid grid-cols-5 sm:grid-cols-10 gap-1.5 bg-slate-950/70 backdrop-blur-md border border-slate-700/60 rounded-xl p-1.5 shadow-lg"></div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 bg-slate-950/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-2 sm:p-2.5 shadow-lg">
+            <div id="lobbyStageInfoGrid" class="grid grid-cols-1 lg:grid-cols-12 gap-2 bg-slate-950/80 backdrop-blur-md border border-slate-700/60 rounded-xl p-2 sm:p-2.5 shadow-lg">
               <!-- Brief Monster Tier Stats -->
               <div class="lg:col-span-4 flex flex-col justify-center gap-1">
                 <div class="flex items-center justify-between text-[10px] font-bold text-slate-300">
@@ -687,7 +1106,7 @@
     <!-- Left Column: Battle Canvas & Action Deck -->
     <section class="lg:col-span-9 flex flex-col gap-2">
       <!-- Top Live HUD Strip -->
-      <div class="grid grid-cols-2 sm:grid-cols-6 gap-1.5 panel-glass border border-slate-700/75 rounded-xl p-1.5">
+      <div id="battleHudStrip" class="grid grid-cols-2 sm:grid-cols-6 gap-1.5 panel-glass border border-slate-700/75 rounded-xl p-1.5">
         <div class="flex items-center justify-between gap-1 bg-slate-950/90 px-2.5 py-1.5 rounded-lg border border-amber-500/25 min-w-0">
           <span class="text-[10px] text-slate-400 font-semibold whitespace-nowrap shrink-0">스테이지</span>
           <span id="hudStageLabel" class="text-[11px] font-black text-amber-300 whitespace-nowrap truncate" title="현재 모드">1-1 (x1.00)</span>
@@ -715,7 +1134,7 @@
       </div>
 
       <!-- Battleground Canvas Container -->
-      <div class="relative w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden border border-slate-700/80 ring-1 ring-white/10 shadow-[0_8px_36px_rgba(2,6,23,0.95)]">
+      <div id="battleCanvasWrap" class="relative w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden border border-slate-700/80 ring-1 ring-white/10 shadow-[0_8px_36px_rgba(2,6,23,0.95)]">
         <canvas id="battleCanvas" class="w-full h-full block cursor-pointer"></canvas>
 
         <!-- Top Overlay Bar: Boss Timer Banner (left) + Quick Action Bar (right), non-overlapping -->
@@ -737,11 +1156,11 @@
               ⏩ 다음 웨이브
             </button>
             <button id="btnBountyBoss" class="game-btn flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-b from-orange-600/95 to-rose-700/95 backdrop-blur-sm hover:from-orange-500 hover:to-rose-600 border border-orange-400/60 text-white font-bold shadow">
-              <span class="text-[10px] sm:text-[11px]">🎯 현상금 [B]</span>
+              <span class="text-[10px] sm:text-[11px]">🎯 현상금<span class="hidden sm:inline"> [B]</span></span>
               <span id="lblBountyCd" class="text-[9px] sm:text-[10px] font-semibold text-orange-100 opacity-95">보상: 전투 골드</span>
             </button>
             <button id="btnAllUltimate" class="game-btn flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-b from-fuchsia-600/95 to-purple-700/95 backdrop-blur-sm hover:from-fuchsia-500 hover:to-purple-600 border border-fuchsia-400/60 text-white font-bold shadow">
-              <span class="text-[10px] sm:text-[11px]">⚡ 궁극기 [S]</span>
+              <span class="text-[10px] sm:text-[11px]">⚡ 궁극기<span class="hidden sm:inline"> [S]</span></span>
               <span id="lblUltCd" class="text-[9px] sm:text-[10px] font-semibold text-fuchsia-100 opacity-95">즉시 발동</span>
             </button>
           </div>
@@ -787,7 +1206,7 @@
       </div>
 
       <!-- Unified Bottom Control Bar: Summon / 5x Summon / Merge / AutoMerge / Gamble / Consumables -->
-      <div class="grid grid-cols-4 sm:grid-cols-8 gap-1.5 panel-glass border border-slate-700/75 rounded-xl p-1.5">
+      <div id="battleActionDeck" class="grid grid-cols-4 sm:grid-cols-8 gap-1.5 panel-glass border border-slate-700/75 rounded-xl p-1.5">
         <button id="btnSummon" class="game-btn flex flex-col items-center justify-center py-1.5 px-1 rounded-xl bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20 text-center">
           <span class="text-[11px] leading-tight flex items-center gap-1">소환 <span class="keycap bg-slate-950/20 border-slate-950/25 text-slate-950">Space</span></span>
           <span id="lblSummonCost" class="text-[10px] font-extrabold opacity-90">비용: 80 G</span>
@@ -834,7 +1253,7 @@
     <aside class="lg:col-span-3 flex flex-col gap-2 lg:max-h-[calc(100vh-4.6rem)] lg:overflow-y-auto custom-scrollbar pr-0.5">
 
       <!-- Selected Unit Inspector -->
-      <div class="panel-glass border border-slate-700/75 rounded-2xl p-2.5 flex flex-col gap-2">
+      <div id="battleUnitCard" class="panel-glass border border-slate-700/75 rounded-2xl p-2.5 flex flex-col gap-2">
         <div class="flex items-center justify-between">
           <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-300">선택된 유닛 정보</h2>
           <span id="selTierBadge" class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-slate-800 text-slate-300">슬롯 미선택</span>
@@ -873,7 +1292,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-1.5">
+        <div id="selUnitActions" class="grid grid-cols-2 gap-1.5">
           <button id="btnMergeSelected" disabled class="game-btn py-1.5 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white shadow">
             선택 합성 (2→1)
           </button>
@@ -906,12 +1325,13 @@
       </div>
 
       <!-- Tier Attack Upgrade Panel -->
-      <div class="panel-glass rounded-xl p-2.5 flex flex-col gap-1.5 shadow-lg">
+      <div id="tierUpgradePanel" class="panel-glass rounded-xl p-2.5 flex flex-col gap-1.5 shadow-lg">
         <div class="flex items-center justify-between">
           <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-300">⚔️ 전투 중 등급별 강화</h2>
-          <span class="text-[10px] text-slate-500 font-semibold">단축키 <span class="keycap">1</span><span class="keycap">2</span><span class="keycap">3</span></span>
+          <span class="mobile-hide-hotkey text-[10px] text-slate-500 font-semibold">단축키 <span class="keycap">1</span><span class="keycap">2</span><span class="keycap">3</span></span>
         </div>
 
+        <div id="tierUpgradeGrid" class="flex flex-col gap-1.5">
         <button id="btnUpgBasic" class="game-btn w-full flex items-center justify-between p-2 rounded-xl bg-slate-950/90 hover:bg-slate-800/90 border border-emerald-500/25 text-left transition">
           <div class="flex items-center gap-2 min-w-0">
             <span class="w-1.5 h-7 rounded-full bg-emerald-400 shrink-0"></span>
@@ -944,6 +1364,7 @@
           </div>
           <span id="lblUpgMythicCost" class="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-400/40 text-xs font-black text-amber-300 tabular-nums shrink-0">180 G</span>
         </button>
+        </div>
       </div>
 
     </aside>
@@ -1102,7 +1523,7 @@
   <!-- Unit Codex Modal -->
   <!-- Settings Modal -->
   <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full max-h-[90dvh] overflow-y-auto shadow-2xl">
       <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-950/60">
         <h3 class="text-base font-extrabold text-white">⚙️ 게임 설정</h3>
         <button id="btnCloseSettings" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300">닫기</button>
@@ -1192,7 +1613,7 @@
   </div>
 
   <div id="codexModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[90dvh] flex flex-col shadow-2xl">
       <div class="px-5 py-3.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-wrap items-center gap-2.5">
           <h3 id="codexModalTitle" class="text-base font-extrabold text-white">유닛 도감 (34종)</h3>
@@ -3624,6 +4045,8 @@
 
       function switchScreen(toLobby) {
         inLobby = toLobby;
+        document.body.classList.toggle('is-lobby', inLobby);
+        document.body.classList.toggle('is-battle', !inLobby);
         const lobbyEl = document.getElementById('lobbyScreen');
         const battleEl = document.getElementById('battleScreen');
         const btnToggle = document.getElementById('btnToggleLobby');
@@ -7623,6 +8046,7 @@
       }
 
       function setLobbyTab(tabName) {
+        document.body.classList.toggle('lobby-stage-active', tabName === 'stage');
         document.getElementById('lobbyTabStage').classList.toggle('hidden', tabName !== 'stage');
         document.getElementById('lobbyTabShop').classList.toggle('hidden', tabName !== 'shop');
         document.getElementById('lobbyTabForge').classList.toggle('hidden', tabName !== 'forge');
