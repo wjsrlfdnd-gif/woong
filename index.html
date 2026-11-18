@@ -577,15 +577,134 @@
       body.is-battle #selUnitActions { gap: 0.16rem !important; }
       body.is-battle #selUnitActions > button { padding: 0.22rem 0.08rem !important; font-size: 0.52rem !important; }
 
-      #lobbyScreen { padding: 0.25rem 0.5rem !important; gap: 0.25rem !important; }
-      #lobbyHqBar { padding: 0.22rem 0.5rem !important; }
-      #lobbyTabStage { padding: 0.35rem !important; gap: 0.25rem !important; }
+      /* 로비 가로폰(<=560px 높이): 헤더 + 탭 + 스테이지 슬라이더 + 출격 버튼 한 화면 맞춤 */
+      body.is-lobby header { padding: 0.14rem 0.45rem !important; gap: 0.25rem !important; }
+      body.is-lobby #headerBrandGroup { gap: 0.35rem !important; }
+      body.is-lobby #headerBrandGroup > div:first-child { width: 1.45rem !important; height: 1.45rem !important; font-size: 0.56rem !important; border-radius: 0.4rem !important; }
+      body.is-lobby #headerTitleWrap p { display: none !important; }
+      body.is-lobby #headerTitleWrap h1 { font-size: 0.72rem !important; white-space: nowrap; }
+      body.is-lobby #headerControlsRow {
+        flex-wrap: nowrap !important;
+        justify-content: flex-end;
+        gap: 0.2rem !important;
+        min-width: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      body.is-lobby #headerControlsRow::-webkit-scrollbar { display: none; }
+      body.is-lobby #headerCurrencyPill > div { padding: 0.14rem 0.34rem !important; font-size: 0.61rem !important; }
+      body.is-lobby #headerCurrencyPill .md\:inline { display: none !important; }
+      body.is-lobby #headerActionBtns { flex-wrap: nowrap !important; gap: 0.18rem !important; shrink: 0; }
+      body.is-lobby #headerActionBtns .sm\:inline { display: none !important; }
+
+      #lobbyScreen { padding: 0.16rem 0.45rem !important; gap: 0.16rem !important; }
+      #lobbyHqBar { padding: 0.14rem 0.28rem !important; border-radius: 0.7rem !important; gap: 0.2rem !important; }
+      #lobbyHqTitleGroup { display: none !important; }
+      #lobbySubNavTabs {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        padding: 0.12rem !important;
+        gap: 0.16rem !important;
+      }
+      #lobbySubNavTabs > button {
+        padding: 0.2rem 0.2rem !important;
+        font-size: 0.62rem !important;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #lobbyTabStage { padding: 0.24rem 0.38rem !important; gap: 0.16rem !important; border-radius: 0.85rem !important; }
+      #lobbyStageTopRow > div:first-child h3 { font-size: 0.72rem !important; }
+      #lobbyWorldProgressBadge, #lobbyEquipSummary { font-size: 0.58rem !important; padding: 0.06rem 0.36rem !important; }
       #worldSliderViewport,
-      #lobbyStageSliderInner { min-height: 192px !important; }
-      #lobbyStageSliderInner { padding: 0.38rem 0.5rem !important; gap: 0.2rem !important; }
-      #lobbySelectedWorldTitle { font-size: 1rem !important; }
-      #lobbyStageInfoGrid { grid-template-columns: repeat(12, minmax(0, 1fr)) !important; padding: 0.25rem !important; gap: 0.25rem !important; }
-      #btnStartStageBattle { padding-top: 0.42rem !important; padding-bottom: 0.42rem !important; font-size: 0.82rem !important; }
+      #lobbyStageSliderInner { min-height: 150px !important; }
+      #lobbyStageSliderInner { padding: 0.24rem 0.4rem !important; gap: 0.16rem !important; justify-content: space-between !important; }
+      #btnWorldPrev, #btnWorldNext {
+        top: 0.22rem !important;
+        transform: none !important;
+        width: 1.55rem !important;
+        height: 1.55rem !important;
+        font-size: 0.68rem !important;
+      }
+      #btnWorldPrev { left: 0.3rem !important; }
+      #btnWorldNext { right: 0.3rem !important; }
+      #lobbyStageSliderInner > div:first-child {
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        padding-left: 1.85rem !important;
+        padding-right: 1.85rem !important;
+        gap: 0.25rem !important;
+      }
+      #lobbyStageSliderInner > div:first-child > div:first-child {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 0.3rem !important;
+        min-width: 0 !important;
+      }
+      #lobbyStageSliderInner > div:first-child > div:last-child {
+        flex-wrap: nowrap !important;
+        flex-shrink: 0 !important;
+        gap: 0.2rem !important;
+      }
+      #lobbyWorldNumBadge, #lobbyWorldClearBadge,
+      #lobbyDiffBadge, #lobbyStageRecordBadge {
+        font-size: 0.56rem !important;
+        padding: 0.06rem 0.32rem !important;
+        white-space: nowrap !important;
+      }
+      #lobbySelectedWorldTitle {
+        font-size: 0.85rem !important;
+        line-height: 1.15 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      #lobbyStageSliderInner > div:last-child { gap: 0.16rem !important; }
+      #stageSubGrid {
+        grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
+        padding: 0.12rem !important;
+        gap: 0.14rem !important;
+        border-radius: 0.6rem !important;
+      }
+      #stageSubGrid > button { padding: 0.16rem 0.08rem !important; font-size: 0.62rem !important; line-height: 1.15 !important; }
+      #lobbyStageInfoGrid {
+        grid-template-columns: 1.15fr 1.65fr 0.8fr !important;
+        padding: 0.18rem 0.26rem !important;
+        gap: 0.26rem !important;
+        align-items: center !important;
+        border-radius: 0.6rem !important;
+      }
+      #lobbyStageInfoGrid > div {
+        grid-column: auto / span 1 !important;
+        border-top-width: 0 !important;
+        border-left: 1px solid rgba(51, 65, 85, 0.7) !important;
+        padding-top: 0 !important;
+        padding-left: 0.28rem !important;
+        min-width: 0 !important;
+      }
+      #lobbyStageInfoGrid > div:first-child { border-left-width: 0 !important; padding-left: 0 !important; gap: 0.1rem !important; }
+      #lobbyStageInfoGrid > div:first-child > div:first-child { font-size: 0.54rem !important; line-height: 1.1 !important; }
+      #lobbyMobTierStats { gap: 0.12rem !important; font-size: 0.53rem !important; }
+      #lobbyMobTierStats > div { padding: 0.1rem 0.16rem !important; line-height: 1.15 !important; }
+      #lobbyStageInfoGrid > div:nth-child(2) { gap: 0.16rem !important; }
+      #previewMidBossImg, #previewMainBossImg { width: 1.35rem !important; height: 1.35rem !important; }
+      #previewMidBossName, #previewMainBossName { font-size: 0.58rem !important; line-height: 1.1 !important; }
+      #previewMidBossHp, #previewMainBossHp { font-size: 0.53rem !important; line-height: 1.1 !important; }
+      #lobbyBossPatternBox {
+        font-size: 0.53rem !important;
+        padding: 0.08rem 0.2rem !important;
+        line-height: 1.15 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      #lobbyRewardPreviewBox { font-size: 0.55rem !important; line-height: 1.2 !important; }
+      #worldSliderDots { gap: 0.25rem !important; }
+      #btnStartStageBattle { padding: 0.34rem 0.6rem !important; font-size: 0.78rem !important; line-height: 1.2 !important; border-radius: 0.65rem !important; }
+    }
+    @media (max-width: 700px) and (max-height: 560px) and (orientation: landscape) {
+      body.is-lobby #headerTitleWrap { display: none !important; }
     }
   </style>
 </head>
